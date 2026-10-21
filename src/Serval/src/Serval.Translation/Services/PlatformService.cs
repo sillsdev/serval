@@ -81,9 +81,10 @@ public class PlatformService(
                     throw new EntityNotFoundException($"Could not find the Engine '{build.EngineRef}'.");
                 }
 
-                // delete pretranslations created by the previous build
-                await _pretranslations.DeleteAllAsync(
+                // Mark pretranslations created by the previous build for deletion
+                await _pretranslations.UpdateAllAsync(
                     p => p.EngineRef == engine.Id && p.ModelRevision < engine.ModelRevision,
+                    u => u.Set(p => p.DeletedAt, DateTime.UtcNow),
                     cancellationToken: ct
                 );
 
@@ -129,9 +130,10 @@ public class PlatformService(
                     throw new EntityNotFoundException($"Could not find the Engine '{build.EngineRef}'.");
                 }
 
-                // delete pretranslations that might have been created during the build
-                await _pretranslations.DeleteAllAsync(
+                // Mark pretranslations that might have been created during the build for deletion
+                await _pretranslations.UpdateAllAsync(
                     p => p.EngineRef == engine.Id && p.ModelRevision > engine.ModelRevision,
+                    u => u.Set(p => p.DeletedAt, DateTime.UtcNow),
                     cancellationToken: ct
                 );
 
@@ -177,9 +179,10 @@ public class PlatformService(
                     throw new EntityNotFoundException($"Could not find the Engine '{build.EngineRef}'.");
                 }
 
-                // delete pretranslations that might have been created during the build
-                await _pretranslations.DeleteAllAsync(
+                // Mark pretranslations that might have been created during the build for deletion
+                await _pretranslations.UpdateAllAsync(
                     p => p.EngineRef == engine.Id && p.ModelRevision > engine.ModelRevision,
+                    u => u.Set(p => p.DeletedAt, DateTime.UtcNow),
                     cancellationToken: ct
                 );
 
@@ -222,9 +225,10 @@ public class PlatformService(
                     throw new EntityNotFoundException($"Could not find the Engine '{build.EngineRef}'.");
                 }
 
-                // delete pretranslations that might have been created during the build
-                await _pretranslations.DeleteAllAsync(
+                // Mark pretranslations that might have been created during the build for deletion
+                await _pretranslations.UpdateAllAsync(
                     p => p.EngineRef == engine.Id && p.ModelRevision > engine.ModelRevision,
+                    u => u.Set(p => p.DeletedAt, DateTime.UtcNow),
                     cancellationToken: ct
                 );
             },

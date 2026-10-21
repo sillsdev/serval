@@ -6,11 +6,9 @@ public class DataFileUpdatedHandler(
     IRepository<Pretranslation> pretranslations
 ) : IEventHandler<DataFileUpdated>
 {
-    public async Task HandleAsync(DataFileUpdated evt, CancellationToken cancellationToken)
+    public Task HandleAsync(DataFileUpdated evt, CancellationToken cancellationToken)
     {
-        HashSet<string> parallelCorpusIds = [];
-        HashSet<string> corpusIds = [];
-        await dataAccessContext.WithTransactionAsync(
+        return dataAccessContext.WithTransactionAsync(
             async ct =>
             {
                 await engines.UpdateAllAsync(
@@ -53,7 +51,7 @@ public class DataFileUpdatedHandler(
                     cancellationToken: ct
                 );
 
-                parallelCorpusIds =
+                HashSet<string> parallelCorpusIds =
                 [
                     .. (
                         await engines.GetAllAsync(
@@ -73,7 +71,7 @@ public class DataFileUpdatedHandler(
                     ),
                 ];
 
-                corpusIds =
+                HashSet<string> corpusIds =
                 [
                     .. (
                         await engines.GetAllAsync(
@@ -92,14 +90,13 @@ public class DataFileUpdatedHandler(
                             .Select(c => c.Id)
                     ),
                 ];
+                await pretranslations.UpdateAllAsync(
+                    pt => parallelCorpusIds.Contains(pt.CorpusRef) || corpusIds.Contains(pt.CorpusRef),
+                    u => u.Set(p => p.DeletedAt, DateTime.UtcNow),
+                    cancellationToken: ct
+                );
             },
             cancellationToken: cancellationToken
-        );
-
-        await pretranslations.DeleteAllAsync(
-            pt => parallelCorpusIds.Contains(pt.CorpusRef) || corpusIds.Contains(pt.CorpusRef),
-            batchSize: 1000,
-            cancellationToken: CancellationToken.None
         );
     }
 }

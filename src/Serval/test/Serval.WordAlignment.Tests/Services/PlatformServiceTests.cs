@@ -31,24 +31,24 @@ public class PlatformServiceTests
         Assert.That(env.Builds.Get("b0").State, Is.EqualTo(JobState.Pending));
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.False);
 
-        Assert.That(env.WordAlignments.Count, Is.EqualTo(0));
+        Assert.That(env.WordAlignments.Count(), Is.Zero);
         await env.PlatformService.InsertWordAlignmentsAsync("e0", GetTestWordAlignments());
-        Assert.That(env.WordAlignments.Count, Is.EqualTo(1));
+        Assert.That(env.WordAlignments.Count(), Is.EqualTo(1));
 
         await env.PlatformService.BuildFaultedAsync("b0", "Faulted");
-        Assert.That(env.WordAlignments.Count, Is.EqualTo(0));
+        Assert.That(env.WordAlignments.Count(), Is.Zero);
         Assert.That(env.Builds.Get("b0").State, Is.EqualTo(JobState.Faulted));
         Assert.That(env.Engines.Get("e0").IsBuilding, Is.False);
 
         await env.PlatformService.BuildRestartingAsync("b0");
         await env.PlatformService.InsertWordAlignmentsAsync("e0", GetTestWordAlignments());
-        Assert.That(env.WordAlignments.Count, Is.EqualTo(1));
+        Assert.That(env.WordAlignments.Count(), Is.EqualTo(1));
         await env.PlatformService.BuildCompletedAsync("b0", 0, 0.0);
-        Assert.That(env.WordAlignments.Count, Is.EqualTo(1));
+        Assert.That(env.WordAlignments.Count(), Is.EqualTo(1));
         await env.PlatformService.BuildStartedAsync("b0");
         await env.PlatformService.InsertWordAlignmentsAsync("e0", GetTestWordAlignments());
         await env.PlatformService.BuildCompletedAsync("b0", 0, 0.0);
-        Assert.That(env.WordAlignments.Count, Is.EqualTo(1));
+        Assert.That(env.WordAlignments.Count(), Is.EqualTo(1));
     }
 
     [Test]

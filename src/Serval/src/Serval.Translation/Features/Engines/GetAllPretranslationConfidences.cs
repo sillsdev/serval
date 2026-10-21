@@ -36,7 +36,8 @@ public class GetAllPretranslationConfidencesHandler(
             pt =>
                 pt.EngineRef == request.EngineId
                 && pt.ModelRevision == engine.ModelRevision
-                && pt.CorpusRef == request.ParallelCorpusId,
+                && pt.CorpusRef == request.ParallelCorpusId
+                && pt.DeletedAt == null,
             cancellationToken
         );
         logger.LogInformation(

@@ -17,10 +17,10 @@ public class UpdateEngineHandler(
     IEngineServiceFactory engineServiceFactory
 ) : IRequestHandler<UpdateEngine>
 {
-    public async Task HandleAsync(UpdateEngine request, CancellationToken cancellationToken)
+    public Task HandleAsync(UpdateEngine request, CancellationToken cancellationToken)
     {
-        await dataAccessContext.WithTransactionAsync(
-            async (ct) =>
+        return dataAccessContext.WithTransactionAsync(
+            async ct =>
             {
                 Engine? engine = await engines.CheckOwnerAsync(request.EngineId, request.Owner, ct);
 
@@ -73,6 +73,12 @@ public class UpdateEngineHandler(
                 if (engine is null)
                     throw new EntityNotFoundException($"Could not find the Engine '{request.EngineId}'.");
 
+                await pretranslations.UpdateAllAsync(
+                    pt => pt.EngineRef == request.EngineId,
+                    u => u.Set(p => p.DeletedAt, DateTime.UtcNow),
+                    cancellationToken: ct
+                );
+
                 ITranslationEngineService engineService = engineServiceFactory.GetEngineService(engine.Type);
                 engineService.ValidateConfiguration(engine.SourceLanguage, engine.TargetLanguage);
                 if (engineTypeChanged)
@@ -101,12 +107,6 @@ public class UpdateEngineHandler(
                 }
             },
             cancellationToken
-        );
-
-        await pretranslations.DeleteAllAsync(
-            pt => pt.EngineRef == request.EngineId,
-            batchSize: 1000,
-            cancellationToken: CancellationToken.None
         );
     }
 }
