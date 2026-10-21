@@ -96,11 +96,10 @@ public class DataFileUpdatedHandler(
             cancellationToken: cancellationToken
         );
 
-        cancellationToken.ThrowIfCancellationRequested();
         await pretranslations.DeleteAllAsync(
             pt => parallelCorpusIds.Contains(pt.CorpusRef) || corpusIds.Contains(pt.CorpusRef),
             batchSize: 1000,
-            cancellationToken: cancellationToken
+            cancellationToken: CancellationToken.None
         );
     }
 }

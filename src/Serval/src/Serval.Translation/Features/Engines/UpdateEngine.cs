@@ -103,11 +103,10 @@ public class UpdateEngineHandler(
             cancellationToken
         );
 
-        cancellationToken.ThrowIfCancellationRequested();
         await pretranslations.DeleteAllAsync(
             pt => pt.EngineRef == request.EngineId,
             batchSize: 1000,
-            cancellationToken: cancellationToken
+            cancellationToken: CancellationToken.None
         );
     }
 }
