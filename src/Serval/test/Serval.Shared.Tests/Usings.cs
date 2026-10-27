@@ -1,5 +1,6 @@
 global using System.IO.Compression;
 global using System.Text.Json;
+global using NSubstitute;
 global using NUnit.Framework;
 global using NUnit.Framework.Constraints;
 global using Serval.Shared.Contracts;
