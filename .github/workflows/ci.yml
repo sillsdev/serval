@@ -43,6 +43,8 @@ jobs:
         run: sudo mkdir -p /var/lib/serval/files && sudo chmod -R 777 /var/lib/serval
       - name: Test
         run: dotnet test --verbosity normal --filter "TestCategory!=E2E&TestCategory!=E2EMissingServices" --collect:"Xplat Code Coverage" --logger "trx;LogFileName=test-results.trx"
+        env:
+          DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE: false
       - name: Test report
         uses: dorny/test-reporter@v3.0.0
         if: success() || failure()
