@@ -6,6 +6,8 @@ services:
     build:
       context: .
       dockerfile: dockerfile.development
+    cap_add:
+      - SYS_PTRACE
     environment:
       - ASPNETCORE_ENVIRONMENT=Staging
       - ASPNETCORE_DeploymentVersion=docker-compose
