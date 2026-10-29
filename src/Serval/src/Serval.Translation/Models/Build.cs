@@ -24,4 +24,5 @@ public record Build : IOwnedEntity
     public DateTime? DateCompleted { get; set; }
     public IReadOnlyList<Phase>? Phases { get; init; }
     public string? TargetQuoteConvention { get; init; }
+    public string? EngineType { get; init; }
 }
