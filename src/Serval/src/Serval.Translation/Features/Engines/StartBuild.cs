@@ -82,6 +82,7 @@ public class StartBuildHandler(
                     Options = MapOptions(request.BuildConfig.Options),
                     DeploymentVersion = configuration.GetValue<string>("deploymentVersion") ?? "Unknown",
                     DateCreated = DateTime.UtcNow,
+                    EngineType = engine.Type,
                 };
 
                 IReadOnlyList<ParallelCorpusContract> corpora = contractMapper.Map(build, engine);
