@@ -11536,6 +11536,9 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("canDenormalizeQuotes", Required = Newtonsoft.Json.Required.Always)]
         public bool CanDenormalizeQuotes { get; set; } = default!;
 
+        [Newtonsoft.Json.JsonProperty("engineType", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public string? EngineType { get; set; } = default!;
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]

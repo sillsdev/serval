@@ -36,4 +36,5 @@ public record TranslationBuildDto
     public IReadOnlyList<PhaseDto>? Phases { get; init; }
     public string? TargetQuoteConvention { get; init; }
     public bool CanDenormalizeQuotes { get; init; }
+    public string? EngineType { get; init; }
 }
