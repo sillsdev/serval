@@ -30,7 +30,8 @@ public class GetPretranslationsByTextIdHandler(
                 pt.EngineRef == request.EngineId
                 && pt.ModelRevision == engine.ModelRevision
                 && pt.CorpusRef == request.ParallelCorpusId
-                && pt.TextId == request.TextId,
+                && pt.TextId == request.TextId
+                && pt.DeletedAt == null,
             cancellationToken
         );
         logger.LogInformation(
