@@ -11,10 +11,10 @@ public class DeleteCorpusHandler(
     IRequestHandler<DeleteDataFile> deleteDataFileHandler
 ) : IRequestHandler<DeleteCorpus>
 {
-    public async Task HandleAsync(DeleteCorpus request, CancellationToken cancellationToken = default)
+    public Task HandleAsync(DeleteCorpus request, CancellationToken cancellationToken = default)
     {
-        await dataAccessContext.WithTransactionAsync(
-            async (ct) =>
+        return dataAccessContext.WithTransactionAsync(
+            async ct =>
             {
                 await engines.CheckOwnerAsync(request.EngineId, request.Owner, ct);
 
@@ -30,7 +30,12 @@ public class DeleteCorpusHandler(
                         $"Could not find the Corpus '{request.CorpusId}' in Engine '{request.EngineId}'."
                     );
                 }
-                await pretranslations.DeleteAllAsync(pt => pt.CorpusRef == request.CorpusId, ct);
+
+                await pretranslations.UpdateAllAsync(
+                    pt => pt.CorpusRef == request.CorpusId,
+                    u => u.Set(p => p.DeletedAt, DateTime.UtcNow),
+                    cancellationToken: ct
+                );
 
                 if (request.DeleteFiles)
                 {

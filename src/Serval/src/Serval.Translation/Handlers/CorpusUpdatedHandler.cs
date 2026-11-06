@@ -10,7 +10,7 @@ public class CorpusUpdatedHandler(
     {
         IReadOnlyList<CorpusFile> files = [.. evt.Files.Select(Map)];
         return dataAccessContext.WithTransactionAsync(
-            async (ct) =>
+            async ct =>
             {
                 await engines.UpdateAllAsync(
                     e =>
@@ -35,7 +35,11 @@ public class CorpusUpdatedHandler(
                     },
                     cancellationToken: ct
                 );
-                await pretranslations.DeleteAllAsync(pt => pt.CorpusRef == evt.CorpusId, ct);
+                await pretranslations.UpdateAllAsync(
+                    pt => pt.CorpusRef == evt.CorpusId,
+                    u => u.Set(p => p.DeletedAt, DateTime.UtcNow),
+                    cancellationToken: ct
+                );
             },
             cancellationToken
         );

@@ -211,30 +211,89 @@ public class MongoRepository<T>(IMongoDataAccessContext context, IMongoCollectio
 
     public async Task<int> DeleteAllAsync(
         Expression<Func<T, bool>> filter,
+        int batchSize = 0,
         CancellationToken cancellationToken = default
     )
     {
-        DeleteResult result;
         try
         {
-            if (_context.Session is not null)
+            // Delete all documents at once if the batch size is zero or lower
+            if (batchSize <= 0)
             {
-                result = await _collection
-                    .DeleteManyAsync(_context.Session, filter, cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
+                DeleteResult result;
+                if (_context.Session is not null)
+                {
+                    result = await _collection
+                        .DeleteManyAsync(_context.Session, filter, cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    result = await _collection
+                        .DeleteManyAsync(filter, cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+                }
+
+                return (int)result.DeletedCount;
             }
-            else
+
+            long totalDeleted = 0;
+            ProjectionDefinition<T, BsonDocument> projection = Builders<T>.Projection.Include("_id");
+            while (true)
             {
-                result = await _collection
-                    .DeleteManyAsync(filter, cancellationToken: cancellationToken)
-                    .ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // Project only the _id field into BsonDocument to minimize memory usage
+                List<BsonDocument> batchDocs;
+                if (_context.Session is not null)
+                {
+                    batchDocs = await _collection
+                        .Find(_context.Session, filter)
+                        .Project(projection)
+                        .Limit(batchSize)
+                        .ToListAsync(cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    batchDocs = await _collection
+                        .Find(filter)
+                        .Project(projection)
+                        .Limit(batchSize)
+                        .ToListAsync(cancellationToken)
+                        .ConfigureAwait(false);
+                }
+
+                if (batchDocs.Count == 0)
+                    break;
+
+                List<BsonValue> idsToDelete = [.. batchDocs.Select(doc => doc["_id"])];
+
+                FilterDefinition<T> idFilter = Builders<T>.Filter.In("_id", idsToDelete);
+
+                DeleteResult result;
+                if (_context.Session is not null)
+                {
+                    result = await _collection
+                        .DeleteManyAsync(_context.Session, idFilter, cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    result = await _collection
+                        .DeleteManyAsync(idFilter, cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+                }
+
+                totalDeleted += result.DeletedCount;
             }
+
+            return (int)totalDeleted;
         }
         catch (FormatException)
         {
             return 0;
         }
-        return (int)result.DeletedCount;
     }
 
     public async Task<ISubscription<T>> SubscribeAsync(

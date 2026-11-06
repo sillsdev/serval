@@ -4,6 +4,7 @@ public static class IServalConfiguratorExtensions
 {
     public static IServalConfigurator AddTranslation(this IServalConfigurator configurator)
     {
+        configurator.Services.AddHostedService<DeletedPretranslationCleaner>();
         configurator.Services.AddScoped<ContractMapper>();
         configurator.Services.AddScoped<IUsfmGenerationService, UsfmGenerationService>();
         configurator.Services.AddScoped<IEngineServiceFactory, EngineServiceFactory>();
