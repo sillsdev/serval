@@ -8,12 +8,15 @@ public class ZipContainer(string fileName) : DisposableBase, IZipContainer
 
     public bool EntryExists(string name)
     {
-        return _archive.GetEntry(name) is not null;
+        return _archive.Entries.FirstOrDefault(e => e.FullName.Equals(name, StringComparison.OrdinalIgnoreCase))
+            is not null;
     }
 
     public Stream OpenEntry(string name)
     {
-        ZipArchiveEntry? entry = _archive.GetEntry(name);
+        ZipArchiveEntry? entry = _archive.Entries.FirstOrDefault(e =>
+            e.FullName.Equals(name, StringComparison.OrdinalIgnoreCase)
+        );
         if (entry is null)
             throw new ArgumentException("The specified entry does not exist.", nameof(name));
         return entry.OpenBoundedStream();

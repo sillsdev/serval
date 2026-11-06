@@ -54,6 +54,6 @@ public class ZipParatextProjectFileHandler(IZipContainer container) : IParatextP
 
     public string? Find(string extension)
     {
-        return _projectContainer.Entries.FirstOrDefault(e => e.EndsWith(extension));
+        return _projectContainer.Entries.FirstOrDefault(e => e.EndsWith(extension, StringComparison.OrdinalIgnoreCase));
     }
 }
