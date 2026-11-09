@@ -43,7 +43,7 @@ public class S3FileStorage : DisposableBase, IFileStorage
 
         ListObjectsV2Response response = await _client.ListObjectsV2Async(request, cancellationToken);
 
-        return response.S3Objects.Any();
+        return response.S3Objects?.Any() ?? false;
     }
 
     public async Task<IReadOnlyCollection<string>> ListFilesAsync(
@@ -63,7 +63,7 @@ public class S3FileStorage : DisposableBase, IFileStorage
         };
 
         ListObjectsV2Response response = await _client.ListObjectsV2Async(request, cancellationToken);
-        return response.S3Objects.Select(s3Obj => s3Obj.Key[_basePath.Length..]).ToList();
+        return response.S3Objects?.Select(s3Obj => s3Obj.Key[_basePath.Length..]).ToList() ?? [];
     }
 
     public Task<string> GetDownloadUrlAsync(
