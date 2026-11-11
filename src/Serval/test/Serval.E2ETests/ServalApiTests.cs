@@ -428,6 +428,7 @@ public class ServalApiTests
 
     [TestCase(true)]
     [TestCase(false)]
+    [Category("slow")]
     public async Task Smt(bool legacyCorpus)
     {
         string engineId = await _helperClient.CreateNewEngineAsync("SmtTransfer", "es", "en", "SMT1");
@@ -545,6 +546,7 @@ public class ServalApiTests
     }
 
     [Test]
+    [Category("slow")]
     public async Task WordAlignment()
     {
         string engineId = await _helperClient.CreateNewEngineAsync("Statistical", "es", "en", "STAT1");
