@@ -126,9 +126,9 @@ def main():
         )
     )
 
-    source_parallel_corpora: List[
-        TranslationParallelCorpus
-    ] = source_client.translation_engines_get_all_parallel_corpora(source_engine.id)
+    source_parallel_corpora: List[TranslationParallelCorpus] = (
+        source_client.translation_engines_get_all_parallel_corpora(source_engine.id)
+    )
     target_parallel_corpus_id_by_source_parallel_corpus_id: Dict[str, str] = {}
     target_corpus_id_by_source_corpus_id: Dict[str, str] = {}
     target_file_by_source_file_id: Dict[str, Dict] = {}
@@ -198,26 +198,34 @@ def main():
                 parallel_corpus_id=target_parallel_corpus_id_by_source_parallel_corpus_id[
                     config.parallel_corpus.id
                 ],
-                source_filters=[
-                    ParallelCorpusFilterConfig(
-                        corpus_id=target_corpus_id_by_source_corpus_id[
-                            filter.corpus.id
-                        ],
-                        scripture_range=filter.scripture_range,
-                        text_ids=filter.text_ids,
-                    )
-                    for filter in config.source_filters
-                ],
-                target_filters=[
-                    ParallelCorpusFilterConfig(
-                        corpus_id=target_corpus_id_by_source_corpus_id[
-                            filter.corpus.id
-                        ],
-                        scripture_range=filter.scripture_range,
-                        text_ids=filter.text_ids,
-                    )
-                    for filter in config.target_filters
-                ],
+                source_filters=(
+                    [
+                        ParallelCorpusFilterConfig(
+                            corpus_id=target_corpus_id_by_source_corpus_id[
+                                filter.corpus.id
+                            ],
+                            scripture_range=filter.scripture_range,
+                            text_ids=filter.text_ids,
+                        )
+                        for filter in config.source_filters
+                    ]
+                    if config.source_filters
+                    else []
+                ),
+                target_filters=(
+                    [
+                        ParallelCorpusFilterConfig(
+                            corpus_id=target_corpus_id_by_source_corpus_id[
+                                filter.corpus.id
+                            ],
+                            scripture_range=filter.scripture_range,
+                            text_ids=filter.text_ids,
+                        )
+                        for filter in config.target_filters
+                    ]
+                    if config.target_filters
+                    else []
+                ),
             )
             for config in source_build.train_on
         ],
