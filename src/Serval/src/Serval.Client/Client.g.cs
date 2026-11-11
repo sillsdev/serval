@@ -2814,7 +2814,7 @@ namespace Serval.Client
         /// <br/>* **`isNative`**: Whether the base translation model supports this language without fine-tuning.
         /// <br/>* **`internalCode`**: The translation model's internal language code. See more details about how the language tag is mapped to an internal code [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
         /// </remarks>
-        /// <param name="engineType">A valid engine type: nmt, echo, or smt-transfer.</param>
+        /// <param name="engineType">A valid engine type: nmt, echo, smt-transfer, or llm-remote.</param>
         /// <param name="language">The language to retrieve information on.</param>
         /// <returns>Language information for the specified engine type.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
@@ -2824,7 +2824,7 @@ namespace Serval.Client
         /// <summary>
         /// Get queue information for a given engine type
         /// </summary>
-        /// <param name="engineType">A valid engine type: smt-transfer, nmt, or echo</param>
+        /// <param name="engineType">A valid engine type: smt-transfer, nmt, llm-remote, or echo</param>
         /// <returns>Queue information for the specified engine type</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<Queue> GetQueueAsync(string engineType, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
@@ -2894,7 +2894,7 @@ namespace Serval.Client
         /// <br/>* **`isNative`**: Whether the base translation model supports this language without fine-tuning.
         /// <br/>* **`internalCode`**: The translation model's internal language code. See more details about how the language tag is mapped to an internal code [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
         /// </remarks>
-        /// <param name="engineType">A valid engine type: nmt, echo, or smt-transfer.</param>
+        /// <param name="engineType">A valid engine type: nmt, echo, smt-transfer, or llm-remote.</param>
         /// <param name="language">The language to retrieve information on.</param>
         /// <returns>Language information for the specified engine type.</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
@@ -3009,7 +3009,7 @@ namespace Serval.Client
         /// <summary>
         /// Get queue information for a given engine type
         /// </summary>
-        /// <param name="engineType">A valid engine type: smt-transfer, nmt, or echo</param>
+        /// <param name="engineType">A valid engine type: smt-transfer, nmt, llm-remote, or echo</param>
         /// <returns>Queue information for the specified engine type</returns>
         /// <exception cref="ServalApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<Queue> GetQueueAsync(string engineType, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))
@@ -3322,7 +3322,7 @@ namespace Serval.Client
         /// <br/>  * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
         /// <br/>* **`sourceLanguage`**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
         /// <br/>* **`targetLanguage`**: The target language code (a valid IETF language tag is recommended)
-        /// <br/>* **`type`**: **`smt-transfer`** or **`nmt`** or **`echo`**
+        /// <br/>* **`type`**: **`smt-transfer`** or **`nmt`** or **`echo`** or **`llm-remote`**
         /// <br/>* **`isModelPersisted`**: (optional) - see below
         /// <br/>### smt-transfer
         /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
@@ -3336,6 +3336,8 @@ namespace Serval.Client
         /// <br/>Typical endpoints: pretranslate
         /// <br/>### echo
         /// <br/>The echo engine has full coverage of all nmt and smt-transfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks nmt or smt-transfer. For example, translating a segment "test" with the echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
+        /// <br/>### llm-remote
+        /// <br/>The LLM Remote engine is currently under development.
         /// <br/>## Sample request:
         /// <br/>            
         /// <br/>    {
@@ -4463,7 +4465,7 @@ namespace Serval.Client
         /// <br/>  * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
         /// <br/>* **`sourceLanguage`**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
         /// <br/>* **`targetLanguage`**: The target language code (a valid IETF language tag is recommended)
-        /// <br/>* **`type`**: **`smt-transfer`** or **`nmt`** or **`echo`**
+        /// <br/>* **`type`**: **`smt-transfer`** or **`nmt`** or **`echo`** or **`llm-remote`**
         /// <br/>* **`isModelPersisted`**: (optional) - see below
         /// <br/>### smt-transfer
         /// <br/>The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
@@ -4477,6 +4479,8 @@ namespace Serval.Client
         /// <br/>Typical endpoints: pretranslate
         /// <br/>### echo
         /// <br/>The echo engine has full coverage of all nmt and smt-transfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks nmt or smt-transfer. For example, translating a segment "test" with the echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
+        /// <br/>### llm-remote
+        /// <br/>The LLM Remote engine is currently under development.
         /// <br/>## Sample request:
         /// <br/>            
         /// <br/>    {

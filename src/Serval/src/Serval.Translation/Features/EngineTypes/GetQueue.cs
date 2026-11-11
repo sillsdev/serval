@@ -22,7 +22,7 @@ public partial class TranslationEngineTypesController
     /// <summary>
     /// Get queue information for a given engine type
     /// </summary>
-    /// <param name="engineType">A valid engine type: smt-transfer, nmt, or echo</param>
+    /// <param name="engineType">A valid engine type: smt-transfer, nmt, llm-remote, or echo</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">Queue information for the specified engine type</response>
     /// <response code="401">The client is not authenticated</response>

@@ -92,7 +92,7 @@ public partial class TranslationEnginesController
     ///   * The name does not have to be unique, as the engine is uniquely identified by the auto-generated id
     /// * **`sourceLanguage`**: The source language code (a valid [IETF language tag](https://en.wikipedia.org/wiki/IETF_language_tag) is recommended)
     /// * **`targetLanguage`**: The target language code (a valid IETF language tag is recommended)
-    /// * **`type`**: **`smt-transfer`** or **`nmt`** or **`echo`**
+    /// * **`type`**: **`smt-transfer`** or **`nmt`** or **`echo`** or **`llm-remote`**
     /// * **`isModelPersisted`**: (optional) - see below
     /// ### smt-transfer
     /// The Statistical Machine Translation Transfer Learning engine is primarily used for translation suggestions. Typical endpoints: translate, get-word-graph, train-segment
@@ -106,6 +106,8 @@ public partial class TranslationEnginesController
     /// Typical endpoints: pretranslate
     /// ### echo
     /// The echo engine has full coverage of all nmt and smt-transfer endpoints. Endpoints like create and build return empty responses. Endpoints like translate and get-word-graph echo the sent content back to the user in a format that mocks nmt or smt-transfer. For example, translating a segment "test" with the echo engine would yield a translation response with translation "test". This engine is useful for debugging and testing purposes.
+    /// ### llm-remote
+    /// The LLM Remote engine is currently under development.
     /// ## Sample request:
     ///
     ///     {

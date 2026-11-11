@@ -51,7 +51,7 @@ public partial class TranslationEngineTypesController
     /// * **`isNative`**: Whether the base translation model supports this language without fine-tuning.
     /// * **`internalCode`**: The translation model's internal language code. See more details about how the language tag is mapped to an internal code [here](https://github.com/sillsdev/serval/wiki/FLORES%E2%80%90200-Language-Code-Resolution-for-NMT-Engine).
     /// </remarks>
-    /// <param name="engineType">A valid engine type: nmt, echo, or smt-transfer.</param>
+    /// <param name="engineType">A valid engine type: nmt, echo, smt-transfer, or llm-remote.</param>
     /// <param name="language">The language to retrieve information on.</param>
     /// <param name="cancellationToken"></param>
     /// <response code="200">Language information for the specified engine type.</response>

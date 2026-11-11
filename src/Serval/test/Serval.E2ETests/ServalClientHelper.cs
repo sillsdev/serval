@@ -720,6 +720,7 @@ public class ServalClientHelper : IAsyncDisposable
             "SmtTransfer" => EngineGroup.Translation,
             "Nmt" => EngineGroup.Translation,
             "Echo" => EngineGroup.Translation,
+            "LlmRemote" => EngineGroup.Translation,
             "Statistical" => EngineGroup.WordAlignment,
             "EchoWordAlignment" => EngineGroup.WordAlignment,
             _ => throw new ArgumentOutOfRangeException(engineType, "Unknown engine type"),
