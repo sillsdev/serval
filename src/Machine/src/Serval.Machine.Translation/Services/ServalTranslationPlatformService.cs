@@ -111,6 +111,7 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
                 EngineTargetLanguageTag = executionData.EngineTargetLanguageTag,
                 ResolvedSourceLanguage = executionData.ResolvedSourceLanguage,
                 ResolvedTargetLanguage = executionData.ResolvedTargetLanguage,
+                Usage = executionData.Usage,
             },
             cancellationToken
         );

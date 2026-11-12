@@ -17,4 +17,5 @@ public record ExecutionData
     public string? ResolvedTargetLanguage { get; init; }
     public double? AveragePretranslationConfidence { get; init; }
     public double? AverageAlignmentScore { get; init; }
+    public BuildUsage? Usage { get; init; }
 }

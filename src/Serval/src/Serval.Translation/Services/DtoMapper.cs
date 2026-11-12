@@ -235,6 +235,7 @@ public class DtoMapper(IUrlService urlService)
             ResolvedTargetLanguage = source.ResolvedTargetLanguage,
             AveragePretranslationConfidence = source.AveragePretranslationConfidence,
             AverageAlignmentScore = source.AverageAlignmentScore,
+            Usage = Map(source.Usage),
         };
 
     private static DiagnosticDto Map(Diagnostic source)
@@ -250,6 +251,16 @@ public class DtoMapper(IUrlService urlService)
     }
 
     private static EnhancementDto Map(Enhancement source) => new() { Type = source.Type, Model = source.Model };
+
+    private static BuildUsageDto? Map(BuildUsage? source) =>
+        source == null
+            ? null
+            : new()
+            {
+                TotalCostCredits = source.TotalCostCredits,
+                TotalInputTokens = source.TotalInputTokens,
+                TotalOutputTokens = source.TotalOutputTokens,
+            };
 }
 
 #pragma warning restore CS0612 // Type or member is obsolete

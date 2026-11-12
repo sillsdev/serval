@@ -11687,6 +11687,9 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("averageAlignmentScore", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public double? AverageAlignmentScore { get; set; } = default!;
 
+        [Newtonsoft.Json.JsonProperty("usage", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public BuildUsage? Usage { get; set; } = default!;
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -11728,6 +11731,21 @@ namespace Serval.Client
 
         [System.Runtime.Serialization.EnumMember(Value = @"Error")]
         Error = 2,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class BuildUsage
+    {
+
+        [Newtonsoft.Json.JsonProperty("totalCostCredits", Required = Newtonsoft.Json.Required.Always)]
+        public decimal TotalCostCredits { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("totalInputTokens", Required = Newtonsoft.Json.Required.Always)]
+        public int TotalInputTokens { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("totalOutputTokens", Required = Newtonsoft.Json.Required.Always)]
+        public int TotalOutputTokens { get; set; } = default!;
 
     }
 

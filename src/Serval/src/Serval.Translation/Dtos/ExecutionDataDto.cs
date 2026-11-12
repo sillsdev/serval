@@ -19,4 +19,5 @@ public record ExecutionDataDto
     public string? ResolvedTargetLanguage { get; init; }
     public double? AveragePretranslationConfidence { get; init; }
     public double? AverageAlignmentScore { get; init; }
+    public BuildUsageDto? Usage { get; init; }
 }

@@ -332,6 +332,7 @@ public class PlatformService(
                         EngineTargetLanguageTag = executionData.EngineTargetLanguageTag,
                         ResolvedSourceLanguage = executionData.ResolvedSourceLanguage,
                         ResolvedTargetLanguage = executionData.ResolvedTargetLanguage,
+                        Usage = Map(executionData.Usage),
                     }
                 ),
             cancellationToken: cancellationToken
@@ -545,4 +546,14 @@ public class PlatformService(
     {
         return alignment != null && alignment.Count > 0 ? alignment.Average(wp => wp.Score) : null;
     }
+
+    private static BuildUsage? Map(BuildUsageContract? source) =>
+        source == null
+            ? null
+            : new()
+            {
+                TotalCostCredits = source.TotalCostCredits,
+                TotalInputTokens = source.TotalInputTokens,
+                TotalOutputTokens = source.TotalOutputTokens,
+            };
 }

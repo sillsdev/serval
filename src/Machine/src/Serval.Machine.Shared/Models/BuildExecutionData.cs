@@ -15,4 +15,5 @@ public record BuildExecutionData
     public string? EngineTargetLanguageTag { get; init; }
     public string? ResolvedSourceLanguage { get; init; }
     public string? ResolvedTargetLanguage { get; init; }
+    public BuildUsageContract? Usage { get; init; }
 }

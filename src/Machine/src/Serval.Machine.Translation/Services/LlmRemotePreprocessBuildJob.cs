@@ -97,6 +97,7 @@ public class LlmRemotePreprocessBuildJob(
             EngineTargetLanguageTag = targetLanguageTag,
             ResolvedSourceLanguage = sourceLanguageTag,
             ResolvedTargetLanguage = targetLanguageTag,
+            Usage = new BuildUsageContract(),
         };
         await PlatformService.UpdateBuildExecutionDataAsync(engineId, buildId, executionData, cancellationToken);
     }
