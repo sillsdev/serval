@@ -9,7 +9,7 @@ public class GetAllEnginesHandler(IRepository<Engine> engines, IRepository<Usage
 {
     public async Task<GetAllEnginesResponse> HandleAsync(GetAllEngines request, CancellationToken cancellationToken)
     {
-        Usage? usage = await usages.GetAsync(request.Owner, cancellationToken);
+        Usage? usage = await usages.GetAsync(u => u.Owner == request.Owner, cancellationToken);
         IEnumerable<TranslationEngineDto> dtos = (
             await engines.GetAllAsync(e => e.Owner == request.Owner, cancellationToken)
         ).Select(engine => mapper.Map(engine, usage));

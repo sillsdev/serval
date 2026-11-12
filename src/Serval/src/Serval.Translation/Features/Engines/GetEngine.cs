@@ -10,7 +10,7 @@ public class GetEngineHandler(IRepository<Engine> engines, IRepository<Usage> us
     public async Task<GetEngineResponse> HandleAsync(GetEngine request, CancellationToken cancellationToken)
     {
         Engine engine = await engines.CheckOwnerAsync(request.EngineId, request.Owner, cancellationToken);
-        Usage? usage = await usages.GetAsync(request.Owner, cancellationToken);
+        Usage? usage = await usages.GetAsync(u => u.Owner == request.Owner, cancellationToken);
         return new(mapper.Map(engine, usage));
     }
 }

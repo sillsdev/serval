@@ -48,10 +48,17 @@ public class CreateEngineHandler(
         if (!engineServiceFactory.EngineTypeExists(request.EngineConfig.Type))
             throw new InvalidOperationException($"'{request.EngineConfig.Type}' is an invalid engine type.");
 
-        Usage? usage = await usages.GetAsync(request.Owner, cancellationToken);
         return await dataAccessContext.WithTransactionAsync(
-            async (ct) =>
+            async ct =>
             {
+                Usage? usage = await usages.GetAsync(u => u.Owner == request.Owner, ct);
+                if (usage is null)
+                {
+                    // The initial usage implementation is per-client
+                    usage = new() { Owner = request.Owner };
+                    await usages.InsertAsync(usage, ct);
+                }
+
                 Engine engine = new()
                 {
                     Name = request.EngineConfig.Name,
