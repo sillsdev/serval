@@ -111,7 +111,7 @@ public class NmtPreprocessBuildJob(
             { "Warnings", new JsonArray(warnings.Select(w => JsonValue.Create(w)).ToArray()) },
         };
         Logger.LogInformation("{summary}", buildPreprocessSummary.ToJsonString());
-        var executionData = new BuildExecutionData()
+        var executionData = new BuildExecutionData
         {
             TrainCount = stats.TrainCount,
             InferenceCount = stats.InferenceCount,
@@ -126,6 +126,7 @@ public class NmtPreprocessBuildJob(
             EngineTargetLanguageTag = targetLanguageTag,
             ResolvedSourceLanguage = resolvedSourceLanguage,
             ResolvedTargetLanguage = resolvedTargetLanguage,
+            Usage = new BuildUsageContract(),
         };
         await PlatformService.UpdateBuildExecutionDataAsync(engineId, buildId, executionData, cancellationToken);
 

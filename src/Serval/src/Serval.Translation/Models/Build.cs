@@ -25,4 +25,5 @@ public record Build : IOwnedEntity
     public IReadOnlyList<Phase>? Phases { get; init; }
     public string? TargetQuoteConvention { get; init; }
     public string? EngineType { get; init; }
+    public IReadOnlyList<Enhancement>? Enhancements { get; init; }
 }

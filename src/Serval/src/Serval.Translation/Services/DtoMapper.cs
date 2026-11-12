@@ -6,7 +6,7 @@ public class DtoMapper(IUrlService urlService)
 {
     private readonly IUrlService _urlService = urlService;
 
-    public TranslationEngineDto Map(Engine source)
+    public TranslationEngineDto Map(Engine source, Usage? usage)
     {
         return new()
         {
@@ -22,6 +22,7 @@ public class DtoMapper(IUrlService urlService)
             Confidence = Math.Round(source.Confidence, 8),
             CorpusSize = source.CorpusSize,
             DateCreated = source.DateCreated,
+            Usage = Map(usage),
         };
     }
 
@@ -59,6 +60,7 @@ public class DtoMapper(IUrlService urlService)
             TargetQuoteConvention = targetQuoteConvention,
             CanDenormalizeQuotes = targetQuoteConvention != "",
             EngineType = source.EngineType,
+            Enhancements = source.Enhancements?.Select(Map).ToList(),
         };
     }
 
@@ -227,12 +229,14 @@ public class DtoMapper(IUrlService urlService)
             IsTrainFilteredByChapter = source.IsTrainFilteredByChapter ?? false,
             Warnings = source.Warnings ?? [],
             Diagnostics = source.Diagnostics?.Select(Map).ToList() ?? [],
+            DiagnosticsTruncated = source.DiagnosticsTruncated,
             EngineSourceLanguageTag = source.EngineSourceLanguageTag,
             EngineTargetLanguageTag = source.EngineTargetLanguageTag,
             ResolvedSourceLanguage = source.ResolvedSourceLanguage,
             ResolvedTargetLanguage = source.ResolvedTargetLanguage,
             AveragePretranslationConfidence = source.AveragePretranslationConfidence,
             AverageAlignmentScore = source.AverageAlignmentScore,
+            Usage = Map(source.Usage),
         };
 
     private static DiagnosticDto Map(Diagnostic source)
@@ -246,6 +250,23 @@ public class DtoMapper(IUrlService urlService)
             Data = source.Data,
         };
     }
+
+    private static EnhancementDto Map(Enhancement source) => new() { Type = source.Type, Model = source.Model };
+
+    private static BuildUsageDto? Map(BuildUsage? source) =>
+        source == null
+            ? null
+            : new()
+            {
+                TotalCostCredits = source.TotalCostCredits,
+                TotalInputTokens = source.TotalInputTokens,
+                TotalOutputTokens = source.TotalOutputTokens,
+            };
+
+    private static UsageDto? Map(Usage? source) =>
+        source == null
+            ? null
+            : new() { TotalCostCredits = source.TotalCostCredits, CostLimitCredits = source.CostLimitCredits };
 }
 
 #pragma warning restore CS0612 // Type or member is obsolete

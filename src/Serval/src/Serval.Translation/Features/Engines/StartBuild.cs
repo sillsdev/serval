@@ -13,6 +13,7 @@ public record TranslationBuildConfigDto
     /// </example>
     public object? Options { get; init; }
     public string? Model { get; init; }
+    public IReadOnlyList<EnhancementConfigDto>? Enhancements { get; init; }
 }
 
 public record PretranslateCorpusConfigDto
@@ -28,6 +29,12 @@ public record PretranslateCorpusConfigDto
 
     public string? ParallelCorpusId { get; init; }
     public IReadOnlyList<ParallelCorpusFilterConfigDto>? SourceFilters { get; init; }
+}
+
+public record EnhancementConfigDto
+{
+    public required string Type { get; init; }
+    public string? Model { get; init; }
 }
 
 public record StartBuild(string Owner, string EngineId, TranslationBuildConfigDto BuildConfig)
@@ -83,6 +90,8 @@ public class StartBuildHandler(
                     DeploymentVersion = configuration.GetValue<string>("deploymentVersion") ?? "Unknown",
                     DateCreated = DateTime.UtcNow,
                     EngineType = engine.Type,
+                    Model = request.BuildConfig.Model,
+                    Enhancements = request.BuildConfig.Enhancements?.Select(Map).ToList(),
                 };
 
                 IReadOnlyList<ParallelCorpusContract> corpora = contractMapper.Map(build, engine);
@@ -373,6 +382,8 @@ public class StartBuildHandler(
             throw new InvalidOperationException($"Unable to parse field 'options' : {e.Message}", e);
         }
     }
+
+    private static Enhancement Map(EnhancementConfigDto source) => new() { Type = source.Type, Model = source.Model };
 }
 
 public partial class TranslationEnginesController

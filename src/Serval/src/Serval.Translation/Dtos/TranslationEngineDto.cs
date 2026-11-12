@@ -14,4 +14,5 @@ public record TranslationEngineDto
     public required double Confidence { get; init; }
     public required int CorpusSize { get; init; }
     public DateTime? DateCreated { get; init; }
+    public UsageDto? Usage { get; init; }
 }

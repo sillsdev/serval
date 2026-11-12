@@ -41,6 +41,9 @@ public static class IServalConfiguratorExtensions
         // Echo Engine
         configurator.AddTranslationEngine<EchoTranslationEngineService>(nameof(EngineType.Echo));
 
+        // LLM Remote Engine
+        configurator.AddTranslationEngine<LlmRemoteTranslationEngineService>(nameof(EngineType.LlmRemote));
+
         return configurator;
     }
 
@@ -66,6 +69,7 @@ public static class IServalConfiguratorExtensions
         configurator.Services.AddSingleton<ILocalBuildJobFactory, NmtLocalBuildJobFactory>();
         configurator.Services.AddSingleton<ILocalBuildJobFactory, SmtTransferLocalBuildJobFactory>();
         configurator.Services.AddSingleton<ILocalBuildJobFactory, EchoLocalBuildJobFactory>();
+        configurator.Services.AddSingleton<ILocalBuildJobFactory, LlmRemoteLocalBuildJobFactory>();
         return configurator;
     }
 

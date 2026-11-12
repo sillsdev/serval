@@ -37,4 +37,5 @@ public record TranslationBuildDto
     public string? TargetQuoteConvention { get; init; }
     public bool CanDenormalizeQuotes { get; init; }
     public string? EngineType { get; init; }
+    public IReadOnlyList<EnhancementDto>? Enhancements { get; init; }
 }

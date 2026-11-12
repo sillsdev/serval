@@ -428,6 +428,56 @@ public class ServalApiTests
 
     [TestCase(true)]
     [TestCase(false)]
+    public async Task LlmRemote(bool paratext)
+    {
+        string engineId = await _helperClient.CreateNewEngineAsync("LlmRemote", "en", "es", "LLM Remote");
+        string corpusId;
+        if (paratext)
+        {
+            (string parallelCorpusId, ParallelCorpusConfig?) corpus =
+                await _helperClient.AddParatextCorpusToEngineAsync(engineId, "en", "es", true);
+            corpusId = corpus.parallelCorpusId;
+        }
+        else
+        {
+            string[] books = ["1JN.txt", "2JN.txt"];
+            ParallelCorpusConfig trainCorpus = await _helperClient.MakeParallelTextCorpus(books, "en", "es", true);
+            await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, trainCorpus, false);
+            books = ["3JN.txt"];
+            ParallelCorpusConfig pretranslateCorpus = await _helperClient.MakeParallelTextCorpus(
+                books,
+                "en",
+                "es",
+                true
+            );
+            corpusId = await _helperClient.AddParallelTextCorpusToEngineAsync(engineId, pretranslateCorpus, true);
+        }
+
+        // Configure LLM Remote specific configuration
+        _helperClient.TranslationBuildConfig.Options = null;
+        _helperClient.TranslationBuildConfig.Model = "openai/gpt-example";
+
+        string buildId = await _helperClient.BuildEngineAsync(engineId);
+        TranslationBuild build = await _helperClient.TranslationEnginesClient.GetBuildAsync(engineId, buildId);
+        IList<Pretranslation> pretranslations = await _helperClient.TranslationEnginesClient.GetAllPretranslationsAsync(
+            engineId,
+            corpusId
+        );
+
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(
+                build.Model,
+                Is.EqualTo(_helperClient.TranslationBuildConfig.Model),
+                JsonSerializer.Serialize(build)
+            );
+            Assert.That(build.State, Is.EqualTo(JobState.Completed), JsonSerializer.Serialize(build));
+            Assert.That(pretranslations, Has.Count.GreaterThan(1));
+        }
+    }
+
+    [TestCase(true)]
+    [TestCase(false)]
     [Category("slow")]
     public async Task Smt(bool legacyCorpus)
     {
