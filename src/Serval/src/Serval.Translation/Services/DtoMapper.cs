@@ -59,6 +59,7 @@ public class DtoMapper(IUrlService urlService)
             TargetQuoteConvention = targetQuoteConvention,
             CanDenormalizeQuotes = targetQuoteConvention != "",
             EngineType = source.EngineType,
+            Enhancements = source.Enhancements?.Select(Map).ToList(),
         };
     }
 
@@ -246,6 +247,8 @@ public class DtoMapper(IUrlService urlService)
             Data = source.Data,
         };
     }
+
+    private static EnhancementDto Map(Enhancement source) => new() { Type = source.Type, Model = source.Model };
 }
 
 #pragma warning restore CS0612 // Type or member is obsolete

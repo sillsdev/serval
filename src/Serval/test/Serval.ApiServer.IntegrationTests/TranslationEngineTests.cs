@@ -2141,6 +2141,27 @@ public class TranslationEngineTests
     }
 
     [Test]
+    public async Task StartBuildAsync_Enhancements()
+    {
+        const string Type = "polish";
+        const string Model = "openai/gpt-example";
+
+        TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
+        TranslationBuildConfig tbc = new() { Enhancements = [new() { Type = Type, Model = Model }] };
+        await Assert.ThrowsAsync<ServalApiException>(() => client.GetCurrentBuildAsync(NMT_ENGINE1_ID));
+
+        TranslationBuild build = await client.StartBuildAsync(NMT_ENGINE1_ID, tbc);
+        Assert.That(build, Is.Not.Null);
+        Assert.That(build.Enhancements, Is.Not.Null);
+        Assert.That(build.Enhancements, Has.Count.EqualTo(1));
+        Assert.That(build.Enhancements[0].Type, Is.EqualTo(Type));
+        Assert.That(build.Enhancements[0].Model, Is.EqualTo(Model));
+
+        build = await client.GetCurrentBuildAsync(NMT_ENGINE1_ID);
+        Assert.That(build, Is.Not.Null);
+    }
+
+    [Test]
     public async Task TryToQueueMultipleBuildsPerSingleUser()
     {
         TranslationEnginesClient client = _env.CreateTranslationEnginesClient();
