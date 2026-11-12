@@ -228,6 +228,7 @@ public class DtoMapper(IUrlService urlService)
             IsTrainFilteredByChapter = source.IsTrainFilteredByChapter ?? false,
             Warnings = source.Warnings ?? [],
             Diagnostics = source.Diagnostics?.Select(Map).ToList() ?? [],
+            DiagnosticsTruncated = source.DiagnosticsTruncated,
             EngineSourceLanguageTag = source.EngineSourceLanguageTag,
             EngineTargetLanguageTag = source.EngineTargetLanguageTag,
             ResolvedSourceLanguage = source.ResolvedSourceLanguage,
