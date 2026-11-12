@@ -139,6 +139,16 @@ public static class IServalConfiguratorExtensions
                 MongoMigrations.MigrateRefsToTargetRefs,
             ]
         );
+        configurator.DataAccess.AddRepository<Usage>(
+            "translation.usage",
+            init:
+            [
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<Usage>(Builders<Usage>.IndexKeys.Ascending(e => e.Owner))
+                    ),
+            ]
+        );
 
         return configurator;
     }

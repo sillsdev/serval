@@ -11839,6 +11839,21 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("dateCreated", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public System.DateTimeOffset? DateCreated { get; set; } = default!;
 
+        [Newtonsoft.Json.JsonProperty("usage", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public Usage? Usage { get; set; } = default!;
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class Usage
+    {
+
+        [Newtonsoft.Json.JsonProperty("totalCostCredits", Required = Newtonsoft.Json.Required.Always)]
+        public decimal TotalCostCredits { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("costLimitCredits", Required = Newtonsoft.Json.Required.Always)]
+        public decimal CostLimitCredits { get; set; } = default!;
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))")]

@@ -4,14 +4,15 @@ public record GetAllEngines(string Owner) : IRequest<GetAllEnginesResponse>;
 
 public record GetAllEnginesResponse(IEnumerable<TranslationEngineDto> Engines);
 
-public class GetAllEnginesHandler(IRepository<Engine> engines, DtoMapper mapper)
+public class GetAllEnginesHandler(IRepository<Engine> engines, IRepository<Usage> usages, DtoMapper mapper)
     : IRequestHandler<GetAllEngines, GetAllEnginesResponse>
 {
     public async Task<GetAllEnginesResponse> HandleAsync(GetAllEngines request, CancellationToken cancellationToken)
     {
+        Usage? usage = await usages.GetAsync(request.Owner, cancellationToken);
         IEnumerable<TranslationEngineDto> dtos = (
             await engines.GetAllAsync(e => e.Owner == request.Owner, cancellationToken)
-        ).Select(mapper.Map);
+        ).Select(engine => mapper.Map(engine, usage));
         return new(dtos);
     }
 }

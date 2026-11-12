@@ -6,7 +6,7 @@ public class DtoMapper(IUrlService urlService)
 {
     private readonly IUrlService _urlService = urlService;
 
-    public TranslationEngineDto Map(Engine source)
+    public TranslationEngineDto Map(Engine source, Usage? usage)
     {
         return new()
         {
@@ -22,6 +22,7 @@ public class DtoMapper(IUrlService urlService)
             Confidence = Math.Round(source.Confidence, 8),
             CorpusSize = source.CorpusSize,
             DateCreated = source.DateCreated,
+            Usage = Map(usage),
         };
     }
 
@@ -261,6 +262,11 @@ public class DtoMapper(IUrlService urlService)
                 TotalInputTokens = source.TotalInputTokens,
                 TotalOutputTokens = source.TotalOutputTokens,
             };
+
+    private static UsageDto? Map(Usage? source) =>
+        source == null
+            ? null
+            : new() { TotalCostCredits = source.TotalCostCredits, CostLimitCredits = source.CostLimitCredits };
 }
 
 #pragma warning restore CS0612 // Type or member is obsolete

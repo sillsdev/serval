@@ -35,6 +35,7 @@ public record CreateEngineResponse(TranslationEngineDto Engine);
 public class CreateEngineHandler(
     IDataAccessContext dataAccessContext,
     IRepository<Engine> engines,
+    IRepository<Usage> usages,
     IEngineServiceFactory engineServiceFactory,
     DtoMapper mapper
 ) : IRequestHandler<CreateEngine, CreateEngineResponse>
@@ -47,6 +48,7 @@ public class CreateEngineHandler(
         if (!engineServiceFactory.EngineTypeExists(request.EngineConfig.Type))
             throw new InvalidOperationException($"'{request.EngineConfig.Type}' is an invalid engine type.");
 
+        Usage? usage = await usages.GetAsync(request.Owner, cancellationToken);
         return await dataAccessContext.WithTransactionAsync(
             async (ct) =>
             {
@@ -73,7 +75,7 @@ public class CreateEngineHandler(
                         engine.IsModelPersisted,
                         ct
                     );
-                return new CreateEngineResponse(mapper.Map(engine));
+                return new CreateEngineResponse(mapper.Map(engine, usage));
             },
             cancellationToken
         );

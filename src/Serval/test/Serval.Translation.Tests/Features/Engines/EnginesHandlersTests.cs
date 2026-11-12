@@ -107,7 +107,13 @@ public class EnginesHandlersTests
     public async Task CreateEngine()
     {
         var env = new TestEnvironment();
-        CreateEngineHandler handler = new(env.DataAccessContext, env.Engines, env.EngineServiceFactory, env.DtoMapper);
+        CreateEngineHandler handler = new(
+            env.DataAccessContext,
+            env.Engines,
+            env.Usages,
+            env.EngineServiceFactory,
+            env.DtoMapper
+        );
         CreateEngineResponse response = await handler.HandleAsync(
             new CreateEngine(
                 OWNER,
@@ -2880,6 +2886,7 @@ public class EnginesHandlersTests
 
             Pretranslations = new MemoryRepository<Pretranslation>();
             Builds = new MemoryRepository<Build>();
+            Usages = new MemoryRepository<Usage>();
             var parallelCorpusService = Substitute.For<IParallelCorpusService>();
             parallelCorpusService
                 .GetChapters(Arg.Any<IReadOnlyList<ParallelCorpusContract>>(), Arg.Any<string>(), Arg.Any<string>())
@@ -2903,6 +2910,7 @@ public class EnginesHandlersTests
         public IRepository<Engine> Engines { get; }
         public IRepository<Build> Builds { get; }
         public IRepository<Pretranslation> Pretranslations { get; }
+        public IRepository<Usage> Usages { get; }
         public ITranslationEngineService TranslationEngineService { get; }
         public IOptionsMonitor<ApiOptions> ApiOptions { get; }
         public ContractMapper ContractMapper { get; }
