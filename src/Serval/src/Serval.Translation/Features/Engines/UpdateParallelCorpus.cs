@@ -41,7 +41,7 @@ public class UpdateParallelCorpusHandler(
     )
     {
         return dataAccessContext.WithTransactionAsync(
-            async (ct) =>
+            async ct =>
             {
                 await engines.CheckOwnerAsync(request.EngineId, request.Owner, ct);
 
@@ -70,10 +70,12 @@ public class UpdateParallelCorpusHandler(
                 if (updatedEngine is null)
                     throw new EntityNotFoundException($"Could not find the Engine '{request.EngineId}'.");
 
-                await pretranslations.DeleteAllAsync(
+                await pretranslations.UpdateAllAsync(
                     pt => pt.CorpusRef == request.ParallelCorpusId,
+                    u => u.Set(p => p.DeletedAt, DateTime.UtcNow),
                     cancellationToken: ct
                 );
+
                 ParallelCorpus? parallelCorpus = updatedEngine.ParallelCorpora.FirstOrDefault(c =>
                     c.Id == request.ParallelCorpusId
                 );

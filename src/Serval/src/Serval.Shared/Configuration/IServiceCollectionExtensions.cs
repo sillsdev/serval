@@ -14,6 +14,7 @@ public static class IServiceCollectionExtensions
         services.AddScoped<IEventRouter, EventRouter>();
 
         services.Configure<DataFileOptions>(configuration.GetSection(DataFileOptions.Key));
+        services.Configure<PretranslationOptions>(configuration.GetSection(PretranslationOptions.Key));
         services.Configure<ApiOptions>(configuration.GetSection(ApiOptions.Key));
 
         string? mongoConnectionString = configuration.GetConnectionString("Mongo");

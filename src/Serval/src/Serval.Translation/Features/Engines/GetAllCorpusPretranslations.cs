@@ -32,7 +32,8 @@ public class GetAllCorpusPretranslationsHandler(
                 pt.EngineRef == request.EngineId
                 && pt.ModelRevision == engine.ModelRevision
                 && pt.CorpusRef == request.CorpusId
-                && (request.TextId == null || pt.TextId == request.TextId),
+                && (request.TextId == null || pt.TextId == request.TextId)
+                && pt.DeletedAt == null,
             cancellationToken
         );
         logger.LogInformation(

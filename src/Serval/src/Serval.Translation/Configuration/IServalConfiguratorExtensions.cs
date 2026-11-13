@@ -4,6 +4,7 @@ public static class IServalConfiguratorExtensions
 {
     public static IServalConfigurator AddTranslation(this IServalConfigurator configurator)
     {
+        configurator.Services.AddHostedService<DeletedPretranslationCleaner>();
         configurator.Services.AddScoped<ContractMapper>();
         configurator.Services.AddScoped<IUsfmGenerationService, UsfmGenerationService>();
         configurator.Services.AddScoped<IEngineServiceFactory, EngineServiceFactory>();
@@ -137,6 +138,19 @@ public static class IServalConfiguratorExtensions
                         )
                     ),
                 MongoMigrations.MigrateRefsToTargetRefs,
+                c =>
+                    c.Indexes.CreateOrUpdateAsync(
+                        new CreateIndexModel<Pretranslation>(
+                            Builders<Pretranslation>.IndexKeys.Ascending(pt => pt.DeletedAt),
+                            new CreateIndexOptions<Pretranslation>
+                            {
+                                PartialFilterExpression = Builders<Pretranslation>.Filter.Type(
+                                    pt => pt.DeletedAt,
+                                    BsonType.DateTime
+                                ),
+                            }
+                        )
+                    ),
             ]
         );
         configurator.DataAccess.AddRepository<Usage>(
