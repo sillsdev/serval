@@ -30,7 +30,10 @@ public class DeleteParallelCorpusHandler(
                         $"Could not find the Corpus '{request.ParallelCorpusId}' in Engine '{request.EngineId}'."
                     );
                 }
-                await wordAlignments.DeleteAllAsync(wa => wa.CorpusRef == request.ParallelCorpusId, ct);
+                await wordAlignments.DeleteAllAsync(
+                    wa => wa.CorpusRef == request.ParallelCorpusId,
+                    cancellationToken: ct
+                );
             },
             cancellationToken
         );

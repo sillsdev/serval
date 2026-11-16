@@ -16,4 +16,5 @@ public class Pretranslation : IEntity
     public IReadOnlyList<Shared.Models.AlignedWordPair>? Alignment { get; init; }
     public double? Confidence { get; init; }
     public double? AlignmentScore { get; init; }
+    public DateTime? DeletedAt { get; init; }
 }

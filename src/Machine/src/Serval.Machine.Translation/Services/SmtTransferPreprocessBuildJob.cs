@@ -38,7 +38,10 @@ public class SmtTransferPreprocessBuildJob(
         SmtTransferEngineState state = _stateService.Get(engineId);
         using (await AcquireWriteLockAsync(state.Lock, cancellationToken))
         {
-            await _trainSegmentPairs.DeleteAllAsync(p => p.TranslationEngineRef == engineId, cancellationToken);
+            await _trainSegmentPairs.DeleteAllAsync(
+                p => p.TranslationEngineRef == engineId,
+                cancellationToken: cancellationToken
+            );
             await Engines.UpdateAsync(
                 engineId,
                 u => u.Set(e => e.CollectTrainSegmentPairs, true),

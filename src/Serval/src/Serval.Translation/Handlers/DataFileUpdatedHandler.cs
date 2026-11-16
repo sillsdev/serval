@@ -9,7 +9,7 @@ public class DataFileUpdatedHandler(
     public Task HandleAsync(DataFileUpdated evt, CancellationToken cancellationToken)
     {
         return dataAccessContext.WithTransactionAsync(
-            async (ct) =>
+            async ct =>
             {
                 await engines.UpdateAllAsync(
                     e =>
@@ -48,7 +48,7 @@ public class DataFileUpdatedHandler(
                             f => f.Id == evt.DataFileId
                         );
                     },
-                    cancellationToken: cancellationToken
+                    cancellationToken: ct
                 );
 
                 HashSet<string> parallelCorpusIds =
@@ -60,9 +60,15 @@ public class DataFileUpdatedHandler(
                                     c.SourceCorpora.Any(cs => cs.Files.Any(f => f.Id == evt.DataFileId))
                                     || c.TargetCorpora.Any(tc => tc.Files.Any(f => f.Id == evt.DataFileId))
                                 ),
-                            cancellationToken: cancellationToken
+                            cancellationToken: ct
                         )
-                    ).SelectMany(e => e.ParallelCorpora.Select(c => c.Id)),
+                    ).SelectMany(e =>
+                        e.ParallelCorpora.Where(c =>
+                                c.SourceCorpora.Any(cs => cs.Files.Any(f => f.Id == evt.DataFileId))
+                                || c.TargetCorpora.Any(tc => tc.Files.Any(f => f.Id == evt.DataFileId))
+                            )
+                            .Select(c => c.Id)
+                    ),
                 ];
 
                 HashSet<string> corpusIds =
@@ -74,14 +80,20 @@ public class DataFileUpdatedHandler(
                                     c.SourceFiles.Any(f => f.Id == evt.DataFileId)
                                     || c.TargetFiles.Any(f => f.Id == evt.DataFileId)
                                 ),
-                            cancellationToken
+                            cancellationToken: ct
                         )
-                    ).SelectMany(e => e.Corpora.Select(c => c.Id)),
+                    ).SelectMany(e =>
+                        e.Corpora.Where(c =>
+                                c.SourceFiles.Any(f => f.Id == evt.DataFileId)
+                                || c.TargetFiles.Any(f => f.Id == evt.DataFileId)
+                            )
+                            .Select(c => c.Id)
+                    ),
                 ];
-
-                await pretranslations.DeleteAllAsync(
+                await pretranslations.UpdateAllAsync(
                     pt => parallelCorpusIds.Contains(pt.CorpusRef) || corpusIds.Contains(pt.CorpusRef),
-                    cancellationToken: cancellationToken
+                    u => u.Set(p => p.DeletedAt, DateTime.UtcNow),
+                    cancellationToken: ct
                 );
             },
             cancellationToken: cancellationToken

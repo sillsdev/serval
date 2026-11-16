@@ -40,7 +40,7 @@ public class UpdateCorpusHandler(
     public Task<UpdateCorpusResponse> HandleAsync(UpdateCorpus request, CancellationToken cancellationToken = default)
     {
         return dataAccessContext.WithTransactionAsync(
-            async (ct) =>
+            async ct =>
             {
                 await engines.CheckOwnerAsync(request.EngineId, request.Owner, ct);
 
@@ -68,7 +68,12 @@ public class UpdateCorpusHandler(
                         $"Could not find the Corpus '{request.CorpusId}' in Engine '{request.EngineId}'."
                     );
                 }
-                await pretranslations.DeleteAllAsync(pt => pt.CorpusRef == request.CorpusId, ct);
+
+                await pretranslations.UpdateAllAsync(
+                    pt => pt.CorpusRef == request.CorpusId,
+                    u => u.Set(p => p.DeletedAt, DateTime.UtcNow),
+                    cancellationToken: ct
+                );
                 Corpus corpus = updatedEngine.Corpora.First(c => c.Id == request.CorpusId);
                 return new UpdateCorpusResponse(mapper.Map(request.EngineId, corpus));
             },
