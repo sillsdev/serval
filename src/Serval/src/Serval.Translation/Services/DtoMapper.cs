@@ -59,7 +59,7 @@ public class DtoMapper(IUrlService urlService)
             Phases = source.Phases?.Select(Map).ToList(),
             TargetQuoteConvention = targetQuoteConvention,
             CanDenormalizeQuotes = targetQuoteConvention != "",
-            EngineType = source.EngineType,
+            EngineType = source.EngineType?.ToKebabCase(),
             Enhancements = source.Enhancements?.Select(Map).ToList(),
         };
     }

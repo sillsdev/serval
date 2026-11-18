@@ -89,7 +89,7 @@ public class StartBuildHandler(
                     Options = MapOptions(request.BuildConfig.Options),
                     DeploymentVersion = configuration.GetValue<string>("deploymentVersion") ?? "Unknown",
                     DateCreated = DateTime.UtcNow,
-                    EngineType = engine.Type,
+                    EngineType = engine.Type.ToKebabCase(),
                     Model = request.BuildConfig.Model,
                     Enhancements = request.BuildConfig.Enhancements?.Select(Map).ToList(),
                 };
