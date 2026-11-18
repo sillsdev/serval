@@ -175,7 +175,10 @@ public abstract class ClearMLMonitorService<TEngine>(
 
                         case ClearMLTaskStatus.Completed:
                         {
-                            string? message = GetUserProperty(task, "message");
+                            // The final in progress task status update specifies a percentCompleted of 1.0,
+                            // with a blank message. To ensure that this completed message updates the job status,
+                            // we default to a completed message if the task did not specify a message.
+                            string message = GetUserProperty(task, "message") ?? "Completed";
                             await UpdateTrainJobStatus(
                                 platformService,
                                 engine.CurrentBuild.BuildId,
