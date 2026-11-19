@@ -33,30 +33,37 @@ public static class IServalConfiguratorExtensions
         builder
             .Services.AddHttpClient("ClearML")
             .ConfigureHttpClient(httpClient => httpClient.BaseAddress = new Uri(connectionString!))
-            .AddPolicyHandler(
-                (serviceProvider, _) =>
-                    Policy
-                        .Handle<HttpRequestException>()
-                        .OrTransientHttpStatusCode()
-                        .OrResult(msg => msg.StatusCode == HttpStatusCode.TooManyRequests)
-                        .WaitAndRetryAsync(
-                            7,
-                            retryAttempt => TimeSpan.FromSeconds(2 * retryAttempt), // total 56, less than the 1 minute limit
-                            onRetryAsync: (outcome, timespan, retryAttempt, context) =>
+            .AddResilienceHandler(
+                "ClearML",
+                (builder, context) =>
+                {
+                    var logger = context.ServiceProvider.GetRequiredService<ILogger<ClearMLService>>();
+                    builder.AddRetry(
+                        new HttpRetryStrategyOptions
+                        {
+                            MaxRetryAttempts = 7,
+                            Delay = TimeSpan.FromSeconds(2),
+                            BackoffType = DelayBackoffType.Linear,
+                            UseJitter = false,
+                            ShouldRetryAfterHeader = false,
+                            OnRetry = args =>
                             {
-                                if (retryAttempt < 3)
-                                    return Task.CompletedTask;
-                                // Log the retry attempt
-                                var logger = serviceProvider.GetRequiredService<ILogger<ClearMLService>>();
-                                logger.LogInformation(
-                                    "Retry {RetryAttempt} encountered an error. Waiting {Timespan} before next retry. Error: {ErrorMessage}",
-                                    retryAttempt,
-                                    timespan,
-                                    outcome.Exception?.Message
-                                );
-                                return Task.CompletedTask;
-                            }
-                        )
+                                int retryAttempt = args.AttemptNumber + 1;
+                                if (retryAttempt >= 3)
+                                {
+                                    logger.LogInformation(
+                                        "Retry {RetryAttempt} encountered an error. Waiting {Timespan} before next retry. Error: {ErrorMessage}",
+                                        retryAttempt,
+                                        args.RetryDelay,
+                                        args.Outcome.Exception?.Message ?? args.Outcome.Result?.StatusCode.ToString()
+                                    );
+                                }
+
+                                return default;
+                            },
+                        }
+                    );
+                }
             );
 
         builder.Services.AddSingleton<IClearMLService, ClearMLService>();
