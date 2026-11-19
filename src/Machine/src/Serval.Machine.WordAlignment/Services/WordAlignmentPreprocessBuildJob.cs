@@ -97,8 +97,7 @@ public class WordAlignmentPreprocessBuildJob(
     )
     {
         IReadOnlyList<DiagnosticContract> diagnostics = GetDiagnostics(
-            stats.TrainCount,
-            stats.InferenceCount,
+            stats,
             sourceLanguageTag,
             targetLanguageTag,
             sourceLanguageHasNativeSupport: true,
@@ -192,7 +191,7 @@ public static class PreprocessStatsExtensions
                 await targetTrainWriter.WriteAsync($"{row.TargetSegment}\n");
             }
 
-            stats.UpdateTrainCount(row);
+            stats.UpdateTrainCount(row, trainingDataType);
         }
     }
 

@@ -39,8 +39,7 @@ public class EchoPreprocessBuildJob(
     )
     {
         IReadOnlyList<DiagnosticContract> diagnostics = GetDiagnostics(
-            stats.TrainCount,
-            stats.InferenceCount,
+            stats,
             sourceLanguageTag,
             targetLanguageTag,
             sourceLanguageHasNativeSupport: true,
@@ -120,10 +119,10 @@ public class EchoPreprocessBuildJob(
         List<PretranslationContract> pretranslations = [];
         await ParallelCorpusService.PreprocessAsync(
             parallelCorpora,
-            (row, _) =>
+            (row, trainingDataType) =>
             {
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
-                    preprocessStats.UpdateTrainCount(row);
+                    preprocessStats.UpdateTrainCount(row, trainingDataType);
                 return Task.CompletedTask;
             },
             (row, isInTrainingData, corpusId) =>
