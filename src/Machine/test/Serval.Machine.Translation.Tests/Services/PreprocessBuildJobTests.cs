@@ -49,9 +49,11 @@ public class PreprocessBuildJobTests
                 Arg.Any<HashSet<string>>()
             )
             .Returns(Task.CompletedTask)
-            .AndDoes(ci =>
-                ci.ArgAt<Func<ParallelRowContract, TrainingDataType, Task>>(1)
-                    .Invoke(
+            .AndDoes(
+                async void (ci) =>
+                {
+                    var train = ci.ArgAt<Func<ParallelRowContract, TrainingDataType, Task>>(1);
+                    await train(
                         new ParallelRowContract(
                             "MAT",
                             [ScriptureRef.Parse("MAT 1:1", ScrVers.English)],
@@ -61,7 +63,19 @@ public class PreprocessBuildJobTests
                             1
                         ),
                         TrainingDataType.Text
-                    )
+                    );
+                    await train(
+                        new ParallelRowContract(
+                            "MAT",
+                            ["MajorBiblicalTerms:Isaac"],
+                            ["MajorBiblicalTerms:Isaac"],
+                            "Source Isaac",
+                            "Target Isaac",
+                            1
+                        ),
+                        TrainingDataType.KeyTerm
+                    );
+                }
             );
 
         env.ParallelCorpusService.AnalyzeUsfmVersification(Arg.Any<IEnumerable<ParallelCorpusContract>>())

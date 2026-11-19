@@ -67,8 +67,7 @@ public class NmtPreprocessBuildJob(
         bool targetLanguageHasNativeSupport = ResolveLanguageCode(targetLanguageTag, out string resolvedTargetLanguage);
 
         IReadOnlyList<DiagnosticContract> diagnostics = GetDiagnostics(
-            stats.TrainCount,
-            stats.InferenceCount,
+            stats,
             sourceLanguageTag,
             targetLanguageTag,
             sourceLanguageHasNativeSupport,
@@ -139,8 +138,7 @@ public class NmtPreprocessBuildJob(
     }
 
     protected override IReadOnlyList<DiagnosticContract> GetDiagnostics(
-        int trainCount,
-        int inferenceCount,
+        PreprocessStats stats,
         string sourceLanguageTag,
         string targetLanguageTag,
         bool sourceLanguageHasNativeSupport,
@@ -155,14 +153,17 @@ public class NmtPreprocessBuildJob(
         List<DiagnosticContract> diagnostics = [];
 
         // Has at least a Gospel of Mark amount of data and not the special case of no data which will be caught elsewhere
-        if (trainCount < BuildJobOptions.MinimumTrainCount && trainCount != 0)
+        if (
+            stats.TrainCountByTrainingDataType[TrainingDataType.Text] < BuildJobOptions.MinimumTrainCount
+            && stats.TrainCountByTrainingDataType[TrainingDataType.Text] != 0
+        )
         {
             diagnostics.Add(
                 BuildDiagnosticService.CreateDiagnostic(
                     "CONFIG-0003",
                     new Dictionary<string, object>
                     {
-                        { "trainCount", trainCount },
+                        { "trainCount", stats.TrainCountByTrainingDataType[TrainingDataType.Text] },
                         { "minimumTrainCount", BuildJobOptions.MinimumTrainCount },
                     }
                 )
@@ -192,7 +193,7 @@ public class NmtPreprocessBuildJob(
             );
         }
 
-        if (trainCount == 0 && (!sourceLanguageHasNativeSupport || !targetLanguageHasNativeSupport))
+        if (stats.TrainCount == 0 && (!sourceLanguageHasNativeSupport || !targetLanguageHasNativeSupport))
         {
             List<string> unknownLanguageCodes = new[]
             {
@@ -216,8 +217,7 @@ public class NmtPreprocessBuildJob(
         return
         [
             .. base.GetDiagnostics(
-                trainCount,
-                inferenceCount,
+                stats,
                 sourceLanguageTag,
                 targetLanguageTag,
                 sourceLanguageHasNativeSupport,

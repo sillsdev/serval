@@ -133,8 +133,7 @@ public abstract class PreprocessBuildJob<TEngine>(
     }
 
     protected virtual IReadOnlyList<DiagnosticContract> GetDiagnostics(
-        int trainCount,
-        int inferenceCount,
+        PreprocessStats stats,
         string sourceLanguageTag,
         string targetLanguageTag,
         bool sourceLanguageHasNativeSupport,
@@ -325,7 +324,7 @@ public abstract class PreprocessBuildJob<TEngine>(
             }
         }
 
-        if (inferenceCount == 0 && isNonPersistedTranslationEngine)
+        if (stats.InferenceCount == 0 && isNonPersistedTranslationEngine)
         {
             diagnostics.Add(BuildDiagnosticService.CreateDiagnostic("CONFIG-0004", []));
         }
