@@ -98,8 +98,7 @@ public class TranslationPreprocessBuildJob(
     )
     {
         IReadOnlyList<DiagnosticContract> diagnostics = GetDiagnostics(
-            stats.TrainCount,
-            stats.InferenceCount,
+            stats,
             sourceLanguageTag,
             targetLanguageTag,
             true,
@@ -184,7 +183,7 @@ public static class PreprocessStatsExtensions
             }
         }
         if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
-            stats.UpdateTrainCount(row);
+            stats.UpdateTrainCount(row, trainingDataType);
     }
 
     public static async Task ProcessPretranslateRowAsync(
