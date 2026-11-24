@@ -175,6 +175,8 @@ public class PreprocessBuildJobTests
         Assert.That(sourceKeyTermSegments.SequenceEqual(["Source Isaac\n"]));
         Assert.That(targetKeyTermSegments.SequenceEqual(["Target Isaac\n"]));
         Assert.That(stats.TrainCount, Is.EqualTo(4));
+        Assert.That(stats.TrainCountByTrainingDataType[TrainingDataType.Text], Is.EqualTo(3));
+        Assert.That(stats.TrainCountByTrainingDataType[TrainingDataType.KeyTerm], Is.EqualTo(1));
         Assert.That(stats.TrainVerseCount, Has.Count.EqualTo(2));
 
         Assert.That(stats.TrainVerseCount, Does.ContainKey("MAT"));

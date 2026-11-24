@@ -99,6 +99,7 @@ public class ServalTranslationPlatformService(ITranslationPlatformService platfo
             new ExecutionDataContract
             {
                 TrainCount = executionData.TrainCount,
+                TrainKeyTermCount = executionData.TrainKeyTermCount,
                 PretranslateCount = executionData.InferenceCount,
                 TrainVerseCount = executionData.TrainVerseCount,
                 PretranslateVerseCount = executionData.InferenceVerseCount,

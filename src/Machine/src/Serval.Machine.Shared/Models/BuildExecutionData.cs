@@ -3,6 +3,7 @@ namespace Serval.Machine.Shared.Models;
 public record BuildExecutionData
 {
     public int? TrainCount { get; init; }
+    public int? TrainKeyTermCount { get; init; }
     public int? InferenceCount { get; init; }
     public bool? IsTrainFilteredByChapter { get; init; }
     public bool? IsInferenceFilteredByChapter { get; init; }

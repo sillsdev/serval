@@ -362,6 +362,7 @@ public class PlatformService(
                     new ExecutionData
                     {
                         TrainCount = executionData.TrainCount,
+                        TrainKeyTermCount = executionData.TrainKeyTermCount,
                         WordAlignCount = executionData.WordAlignCount,
                         TrainVerseCount = executionData.TrainVerseCount,
                         WordAlignVerseCount = executionData.WordAlignVerseCount,

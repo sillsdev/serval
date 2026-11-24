@@ -10,10 +10,13 @@ public record PreprocessStats
     public bool IsInferenceFilteredByChapter { get; set; }
     public Dictionary<string, Dictionary<string, int>> TrainVerseCount { get; set; } = [];
     public Dictionary<string, Dictionary<string, int>> InferenceVerseCount { get; set; } = [];
+    public Dictionary<TrainingDataType, int> TrainCountByTrainingDataType { get; set; } =
+        new() { [TrainingDataType.KeyTerm] = 0, [TrainingDataType.Text] = 0 };
 
-    public void UpdateTrainCount(ParallelRowContract row)
+    public void UpdateTrainCount(ParallelRowContract row, TrainingDataType trainingDataType)
     {
         TrainCount++;
+        TrainCountByTrainingDataType[trainingDataType]++;
         UpdateVerseCount(TrainVerseCount, row);
     }
 

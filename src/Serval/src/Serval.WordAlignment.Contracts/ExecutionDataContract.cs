@@ -3,6 +3,7 @@ namespace Serval.WordAlignment.Contracts;
 public record ExecutionDataContract
 {
     public int? TrainCount { get; init; }
+    public int? TrainKeyTermCount { get; init; }
     public int? WordAlignCount { get; init; }
     public bool? IsTrainFilteredByChapter { get; init; }
     public bool? IsWordAlignFilteredByChapter { get; init; }

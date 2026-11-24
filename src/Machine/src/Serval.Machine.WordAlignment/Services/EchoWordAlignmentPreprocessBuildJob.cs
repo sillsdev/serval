@@ -44,10 +44,10 @@ public class EchoWordAlignmentPreprocessBuildJob(
         List<WordAlignmentContract> wordAlignments = [];
         await ParallelCorpusService.PreprocessAsync(
             parallelCorpora,
-            (row, _) =>
+            (row, trainingDataType) =>
             {
                 if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
-                    preprocessStats.UpdateTrainCount(row);
+                    preprocessStats.UpdateTrainCount(row, trainingDataType);
                 return Task.CompletedTask;
             },
             (row, isInTrainingData, corpusId) =>
@@ -99,8 +99,7 @@ public class EchoWordAlignmentPreprocessBuildJob(
     )
     {
         IReadOnlyList<DiagnosticContract> diagnostics = GetDiagnostics(
-            stats.TrainCount,
-            stats.InferenceCount,
+            stats,
             sourceLanguageTag,
             targetLanguageTag,
             sourceLanguageHasNativeSupport: true,
@@ -134,6 +133,7 @@ public class EchoWordAlignmentPreprocessBuildJob(
             { "EngineId", engineId },
             { "BuildId", buildId },
             { "NumTrainRows", stats.TrainCount },
+            { "NumTrainKeyTermRows", stats.TrainCountByTrainingDataType[TrainingDataType.KeyTerm] },
             { "NumPretranslateRows", stats.InferenceCount },
             { "EngineSourceLanguageTag", sourceLanguageTag },
             { "EngineTargetLanguageTag", targetLanguageTag },
@@ -143,6 +143,7 @@ public class EchoWordAlignmentPreprocessBuildJob(
         var executionData = new BuildExecutionData
         {
             TrainCount = stats.TrainCount,
+            TrainKeyTermCount = stats.TrainCountByTrainingDataType[TrainingDataType.KeyTerm],
             InferenceCount = stats.InferenceCount,
             TrainVerseCount = stats.TrainVerseCount,
             InferenceVerseCount = stats.InferenceVerseCount,

@@ -97,8 +97,7 @@ public class WordAlignmentPreprocessBuildJob(
     )
     {
         IReadOnlyList<DiagnosticContract> diagnostics = GetDiagnostics(
-            stats.TrainCount,
-            stats.InferenceCount,
+            stats,
             sourceLanguageTag,
             targetLanguageTag,
             sourceLanguageHasNativeSupport: true,
@@ -132,6 +131,7 @@ public class WordAlignmentPreprocessBuildJob(
             { "EngineId", engineId },
             { "BuildId", buildId },
             { "NumTrainRows", stats.TrainCount },
+            { "NumTrainKeyTermRows", stats.TrainCountByTrainingDataType[TrainingDataType.KeyTerm] },
             { "NumWordAlignRows", stats.InferenceCount },
             { "EngineSourceLanguageTag", sourceLanguageTag },
             { "EngineTargetLanguageTag", targetLanguageTag },
@@ -141,6 +141,7 @@ public class WordAlignmentPreprocessBuildJob(
         var executionData = new BuildExecutionData()
         {
             TrainCount = stats.TrainCount,
+            TrainKeyTermCount = stats.TrainCountByTrainingDataType[TrainingDataType.KeyTerm],
             InferenceCount = stats.InferenceCount,
             TrainVerseCount = stats.TrainVerseCount,
             InferenceVerseCount = stats.InferenceVerseCount,
@@ -192,7 +193,7 @@ public static class PreprocessStatsExtensions
                 await targetTrainWriter.WriteAsync($"{row.TargetSegment}\n");
             }
 
-            stats.UpdateTrainCount(row);
+            stats.UpdateTrainCount(row, trainingDataType);
         }
     }
 

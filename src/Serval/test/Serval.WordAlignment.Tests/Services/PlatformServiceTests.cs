@@ -112,7 +112,12 @@ public class PlatformServiceTests
         {
             Id = "123",
             EngineRef = "e0",
-            ExecutionData = new() { TrainCount = 0, WordAlignCount = 0 },
+            ExecutionData = new()
+            {
+                TrainCount = 0,
+                TrainKeyTermCount = 0,
+                WordAlignCount = 0,
+            },
         };
         await env.Builds.InsertAsync(build);
 
@@ -120,13 +125,19 @@ public class PlatformServiceTests
 
         ExecutionData? executionData = build.ExecutionData;
 
-        Assert.That(executionData.TrainCount, Is.EqualTo(0));
-        Assert.That(executionData.WordAlignCount, Is.EqualTo(0));
+        Assert.That(executionData.TrainCount, Is.Zero);
+        Assert.That(executionData.TrainKeyTermCount, Is.Zero);
+        Assert.That(executionData.WordAlignCount, Is.Zero);
 
         await env.PlatformService.UpdateBuildExecutionDataAsync(
             engine.Id,
             build.Id,
-            new() { TrainCount = 4, WordAlignCount = 5 }
+            new()
+            {
+                TrainCount = 4,
+                TrainKeyTermCount = 3,
+                WordAlignCount = 5,
+            }
         );
 
         build = await env.Builds.GetAsync(c => c.Id == build.Id);
@@ -135,6 +146,7 @@ public class PlatformServiceTests
 
         Assert.That(executionData, Is.Not.Null);
         Assert.That(executionData.TrainCount, Is.GreaterThan(0));
+        Assert.That(executionData.TrainKeyTermCount, Is.GreaterThan(0));
         Assert.That(executionData.WordAlignCount, Is.GreaterThan(0));
     }
 

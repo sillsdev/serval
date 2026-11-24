@@ -98,8 +98,7 @@ public class TranslationPreprocessBuildJob(
     )
     {
         IReadOnlyList<DiagnosticContract> diagnostics = GetDiagnostics(
-            stats.TrainCount,
-            stats.InferenceCount,
+            stats,
             sourceLanguageTag,
             targetLanguageTag,
             true,
@@ -134,6 +133,7 @@ public class TranslationPreprocessBuildJob(
             { "EngineId", engineId },
             { "BuildId", buildId },
             { "NumTrainRows", stats.TrainCount },
+            { "NumTrainKeyTermRows", stats.TrainCountByTrainingDataType[TrainingDataType.KeyTerm] },
             { "NumPretranslateRows", stats.InferenceCount },
             { "EngineSourceLanguageTag", sourceLanguageTag },
             { "EngineTargetLanguageTag", targetLanguageTag },
@@ -143,6 +143,7 @@ public class TranslationPreprocessBuildJob(
         var executionData = new BuildExecutionData()
         {
             TrainCount = stats.TrainCount,
+            TrainKeyTermCount = stats.TrainCountByTrainingDataType[TrainingDataType.KeyTerm],
             InferenceCount = stats.InferenceCount,
             IsTrainFilteredByChapter = stats.IsTrainFilteredByChapter,
             IsInferenceFilteredByChapter = stats.IsInferenceFilteredByChapter,
@@ -184,7 +185,7 @@ public static class PreprocessStatsExtensions
             }
         }
         if (row.SourceSegment.Length > 0 && row.TargetSegment.Length > 0)
-            stats.UpdateTrainCount(row);
+            stats.UpdateTrainCount(row, trainingDataType);
     }
 
     public static async Task ProcessPretranslateRowAsync(
