@@ -101,8 +101,8 @@ public class NmtPreprocessBuildJob(
             { "Event", "BuildPreprocess" },
             { "EngineId", engineId },
             { "BuildId", buildId },
-            { "NumTrainRows", stats.TrainCount[TrainingDataType.Text] },
-            { "NumKeyTermRows", stats.TrainCount[TrainingDataType.KeyTerm] },
+            { "NumTrainRows", stats.TrainCount },
+            { "NumTrainKeyTermRows", stats.TrainCountByTrainingDataType[TrainingDataType.KeyTerm] },
             { "NumPretranslateRows", stats.InferenceCount },
             { "EngineSourceLanguageTag", sourceLanguageTag },
             { "EngineTargetLanguageTag", targetLanguageTag },
@@ -113,8 +113,8 @@ public class NmtPreprocessBuildJob(
         Logger.LogInformation("{summary}", buildPreprocessSummary.ToJsonString());
         var executionData = new BuildExecutionData
         {
-            TrainCount = stats.TrainCount[TrainingDataType.Text],
-            KeyTermCount = stats.TrainCount[TrainingDataType.KeyTerm],
+            TrainCount = stats.TrainCount,
+            TrainKeyTermCount = stats.TrainCountByTrainingDataType[TrainingDataType.KeyTerm],
             InferenceCount = stats.InferenceCount,
             TrainVerseCount = stats.TrainVerseCount,
             InferenceVerseCount = stats.InferenceVerseCount,
@@ -131,10 +131,7 @@ public class NmtPreprocessBuildJob(
         };
         await PlatformService.UpdateBuildExecutionDataAsync(engineId, buildId, executionData, cancellationToken);
 
-        if (
-            stats.TrainCount[TrainingDataType.Text] == 0
-            && (!sourceLanguageHasNativeSupport || !targetLanguageHasNativeSupport)
-        )
+        if (stats.TrainCount == 0 && (!sourceLanguageHasNativeSupport || !targetLanguageHasNativeSupport))
         {
             throw new InvalidOperationException(
                 $"At least one language code in build {buildId} is unknown to the base model {modelName}, and no data was specified for training. Build canceled."
@@ -159,8 +156,8 @@ public class NmtPreprocessBuildJob(
 
         // Has at least a Gospel of Mark amount of data and not the special case of no data which will be caught elsewhere
         if (
-            stats.TrainCount[TrainingDataType.Text] < BuildJobOptions.MinimumTrainCount
-            && stats.TrainCount[TrainingDataType.Text] != 0
+            stats.TrainCountByTrainingDataType[TrainingDataType.Text] < BuildJobOptions.MinimumTrainCount
+            && stats.TrainCountByTrainingDataType[TrainingDataType.Text] != 0
         )
         {
             diagnostics.Add(
@@ -168,7 +165,7 @@ public class NmtPreprocessBuildJob(
                     "CONFIG-0003",
                     new Dictionary<string, object>
                     {
-                        { "trainCount", stats.TrainCount[TrainingDataType.Text] },
+                        { "trainCount", stats.TrainCountByTrainingDataType[TrainingDataType.Text] },
                         { "minimumTrainCount", BuildJobOptions.MinimumTrainCount },
                     }
                 )
@@ -198,10 +195,7 @@ public class NmtPreprocessBuildJob(
             );
         }
 
-        if (
-            stats.TrainCount[TrainingDataType.Text] == 0
-            && (!sourceLanguageHasNativeSupport || !targetLanguageHasNativeSupport)
-        )
+        if (stats.TrainCount == 0 && (!sourceLanguageHasNativeSupport || !targetLanguageHasNativeSupport))
         {
             List<string> unknownLanguageCodes = new[]
             {

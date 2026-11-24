@@ -222,7 +222,7 @@ public class DtoMapper(IUrlService urlService)
         new()
         {
             TrainCount = source.TrainCount ?? 0,
-            KeyTermCount = source.KeyTermCount ?? 0,
+            TrainKeyTermCount = source.TrainKeyTermCount ?? 0,
             PretranslateCount = source.PretranslateCount ?? 0,
             PretranslateVerseCount = source.PretranslateVerseCount,
             TrainVerseCount = source.TrainVerseCount,

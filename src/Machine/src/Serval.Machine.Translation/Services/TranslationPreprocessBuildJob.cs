@@ -132,8 +132,8 @@ public class TranslationPreprocessBuildJob(
             { "Event", "BuildPreprocess" },
             { "EngineId", engineId },
             { "BuildId", buildId },
-            { "NumTrainRows", stats.TrainCount[TrainingDataType.Text] },
-            { "NumKeyTermRows", stats.TrainCount[TrainingDataType.KeyTerm] },
+            { "NumTrainRows", stats.TrainCount },
+            { "NumTrainKeyTermRows", stats.TrainCountByTrainingDataType[TrainingDataType.KeyTerm] },
             { "NumPretranslateRows", stats.InferenceCount },
             { "EngineSourceLanguageTag", sourceLanguageTag },
             { "EngineTargetLanguageTag", targetLanguageTag },
@@ -142,8 +142,8 @@ public class TranslationPreprocessBuildJob(
         Logger.LogInformation("{summary}", buildPreprocessSummary.ToJsonString());
         var executionData = new BuildExecutionData()
         {
-            TrainCount = stats.TrainCount[TrainingDataType.Text],
-            KeyTermCount = stats.TrainCount[TrainingDataType.KeyTerm],
+            TrainCount = stats.TrainCount,
+            TrainKeyTermCount = stats.TrainCountByTrainingDataType[TrainingDataType.KeyTerm],
             InferenceCount = stats.InferenceCount,
             IsTrainFilteredByChapter = stats.IsTrainFilteredByChapter,
             IsInferenceFilteredByChapter = stats.IsInferenceFilteredByChapter,

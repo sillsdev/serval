@@ -11643,8 +11643,8 @@ namespace Serval.Client
         [Newtonsoft.Json.JsonProperty("trainCount", Required = Newtonsoft.Json.Required.Always)]
         public int TrainCount { get; set; } = default!;
 
-        [Newtonsoft.Json.JsonProperty("keyTermCount", Required = Newtonsoft.Json.Required.Always)]
-        public int KeyTermCount { get; set; } = default!;
+        [Newtonsoft.Json.JsonProperty("trainKeyTermCount", Required = Newtonsoft.Json.Required.Always)]
+        public int TrainKeyTermCount { get; set; } = default!;
 
         [Newtonsoft.Json.JsonProperty("pretranslateCount", Required = Newtonsoft.Json.Required.Always)]
         public int PretranslateCount { get; set; } = default!;

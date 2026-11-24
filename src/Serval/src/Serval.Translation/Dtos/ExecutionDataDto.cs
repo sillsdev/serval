@@ -3,7 +3,7 @@ namespace Serval.Translation.Dtos;
 public record ExecutionDataDto
 {
     public int TrainCount { get; init; }
-    public int KeyTermCount { get; init; }
+    public int TrainKeyTermCount { get; init; }
     public int PretranslateCount { get; init; }
     public bool? IsTrainFilteredByChapter { get; init; }
     public bool? IsPretranslateFilteredByChapter { get; init; }

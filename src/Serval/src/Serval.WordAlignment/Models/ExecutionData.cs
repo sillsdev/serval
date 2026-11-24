@@ -3,7 +3,7 @@ namespace Serval.WordAlignment.Models;
 public record ExecutionData
 {
     public int? TrainCount { get; init; }
-    public int? KeyTermCount { get; init; }
+    public int? TrainKeyTermCount { get; init; }
     public int? WordAlignCount { get; init; }
     public bool? IsTrainFilteredByChapter { get; init; }
     public bool? IsWordAlignFilteredByChapter { get; init; }

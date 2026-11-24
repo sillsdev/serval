@@ -315,7 +315,7 @@ public class PlatformService(
                     new ExecutionData
                     {
                         TrainCount = executionData.TrainCount,
-                        KeyTermCount = executionData.KeyTermCount,
+                        TrainKeyTermCount = executionData.TrainKeyTermCount,
                         PretranslateCount = executionData.PretranslateCount,
                         TrainVerseCount = executionData.TrainVerseCount,
                         PretranslateVerseCount = executionData.PretranslateVerseCount,

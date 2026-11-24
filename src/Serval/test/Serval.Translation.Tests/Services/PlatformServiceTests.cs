@@ -237,7 +237,7 @@ public class PlatformServiceTests
             ExecutionData = new()
             {
                 TrainCount = 0,
-                KeyTermCount = 0,
+                TrainKeyTermCount = 0,
                 PretranslateCount = 0,
             },
         };
@@ -248,7 +248,7 @@ public class PlatformServiceTests
         var executionData = build.ExecutionData;
 
         Assert.That(executionData.TrainCount, Is.Zero);
-        Assert.That(executionData.KeyTermCount, Is.Zero);
+        Assert.That(executionData.TrainKeyTermCount, Is.Zero);
         Assert.That(executionData.PretranslateCount, Is.Zero);
 
         await env.PlatformService.UpdateBuildExecutionDataAsync(
@@ -257,7 +257,7 @@ public class PlatformServiceTests
             new()
             {
                 TrainCount = 4,
-                KeyTermCount = 1,
+                TrainKeyTermCount = 1,
                 PretranslateCount = 5,
                 TrainVerseCount = new Dictionary<string, Dictionary<string, int>>()
                 {
@@ -284,7 +284,7 @@ public class PlatformServiceTests
 
         Assert.That(executionData, Is.Not.Null);
         Assert.That(executionData.TrainCount, Is.GreaterThan(0));
-        Assert.That(executionData.KeyTermCount, Is.GreaterThan(0));
+        Assert.That(executionData.TrainKeyTermCount, Is.GreaterThan(0));
         Assert.That(executionData.PretranslateCount, Is.GreaterThan(0));
 
         Assert.That(executionData.TrainVerseCount, Is.Not.Null);

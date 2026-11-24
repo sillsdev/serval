@@ -115,7 +115,7 @@ public class PlatformServiceTests
             ExecutionData = new()
             {
                 TrainCount = 0,
-                KeyTermCount = 0,
+                TrainKeyTermCount = 0,
                 WordAlignCount = 0,
             },
         };
@@ -126,7 +126,7 @@ public class PlatformServiceTests
         ExecutionData? executionData = build.ExecutionData;
 
         Assert.That(executionData.TrainCount, Is.Zero);
-        Assert.That(executionData.KeyTermCount, Is.Zero);
+        Assert.That(executionData.TrainKeyTermCount, Is.Zero);
         Assert.That(executionData.WordAlignCount, Is.Zero);
 
         await env.PlatformService.UpdateBuildExecutionDataAsync(
@@ -135,7 +135,7 @@ public class PlatformServiceTests
             new()
             {
                 TrainCount = 4,
-                KeyTermCount = 3,
+                TrainKeyTermCount = 3,
                 WordAlignCount = 5,
             }
         );
@@ -146,7 +146,7 @@ public class PlatformServiceTests
 
         Assert.That(executionData, Is.Not.Null);
         Assert.That(executionData.TrainCount, Is.GreaterThan(0));
-        Assert.That(executionData.KeyTermCount, Is.GreaterThan(0));
+        Assert.That(executionData.TrainKeyTermCount, Is.GreaterThan(0));
         Assert.That(executionData.WordAlignCount, Is.GreaterThan(0));
     }
 
